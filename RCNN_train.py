@@ -22,7 +22,7 @@ def train(epoch, model, train_load, optimizer, loss_fn, device):
             logging.info(f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_load.dataset)} ({100. * batch_idx / len(train_load):.0f}%)]\tLoss: {loss.item():.6f}")
             logging.info(f"Readout weights: {param.view(-1)[:5].detach().numpy()}...")
             logging.info(f"Readout closest indices: {idx_closest[:5].detach().numpy()}...")
-            logging.info(f"Readout input energy: {input_energy[:5, :5].detach().numpy()}...")
+            logging.info(f"Readout input energy: {input_energy[:5, :1].detach().numpy()}...")
             logging.info(f"Reservoir state: {state[:5].detach().numpy()}...")
     avg_loss = total_loss / len(train_load) 
     logging.info(f"Average Loss per Epoch {epoch}: {avg_loss:.6f}") 

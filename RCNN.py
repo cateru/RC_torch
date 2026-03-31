@@ -20,10 +20,11 @@ class RCNN(nn.Module):
         self.lookup_table()
 
     def tuning_factor(self, time):
-        a = -2250.04
+        a = -2246.04
         b = 2266.63
         c = 0.00757
-        percent_decrease = a + b*torch.pow(time, c)
+        scaling_factor = 0.001
+        percent_decrease = (a + b*torch.pow(time, c))*scaling_factor
         return percent_decrease
     
     def exp_outputs(self, energy):
@@ -34,7 +35,7 @@ class RCNN(nn.Module):
         return o
     
     def lookup_table(self): 
-        self.time = torch.arange(0.02, 30.02, step = 0.02)
+        self.time = torch.arange(0.30, 200.01, step = 0.01)
         self.percent_decrease = self.tuning_factor(self.time) 
 
     def convert_tangent(self, states):

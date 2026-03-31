@@ -8,7 +8,7 @@ def test(model, test_load, loss_fn, device):
     with torch.no_grad():
         for data, target in test_load: 
             data, target = data.to(device), target.to(device) 
-            output = model(data) 
+            output, _, _ = model(data) 
             test_loss += loss_fn(output, target).item() 
             pred = output.argmax(dim=1, keepdim=True) 
             correct += pred.eq(target.view_as(pred)).sum().item()

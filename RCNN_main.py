@@ -13,7 +13,7 @@ from RCNN_plot import plot_training_results
 
 def main(mode = "train"):
     config = {
-        "epochs": 2,
+        "epochs": 10,
         "batch_size": 32,
         "reservoir_size": 300,
         "learning_rate": 0.001,
@@ -29,11 +29,12 @@ def main(mode = "train"):
     train_load = load_mnist(batch_size=config["batch_size"], train=True) 
     test_load = load_mnist(batch_size=config["batch_size"], train=False)
 
+    loss_fn = nn.CrossEntropyLoss()
+
     if mode == "train":
         logging.info("Starting training...")
         model = RCNN(reservoir_size=config["reservoir_size"], hidden_sizes=config["hidden_sizes"]).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"])
-        loss_fn = nn.CrossEntropyLoss()
 
         losses = []
         weights = []
@@ -52,13 +53,13 @@ def main(mode = "train"):
 
     elif mode == "test":
 
-        model = load_model(config["model_path"], device)
+        model = load_model(config, device)
         test(model, test_load, loss_fn, device)
 
     elif mode == "predict":
 
-        model = load_model(config["model_path"], device)
+        model = load_model(config, device)
         plot_predictions(model, test_load, device, config["num_images"])
 
 if __name__ == "__main__":
-    main(mode = "train")        
+    main(mode = "test")        
