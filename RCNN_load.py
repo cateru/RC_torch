@@ -2,7 +2,8 @@ import torch
 from RCNN import RCNN 
 
 def load_model(config, device):
-    model = RCNN(reservoir_size=config["reservoir_size"], hidden_sizes=config["hidden_sizes"]).to(device)
+    torch.set_num_threads(12)
+    model = RCNN(config).to(device)
     state_dict = torch.load(config["model_path"], map_location=device)
     model.load_state_dict(state_dict)
     model.to(device)

@@ -10,20 +10,20 @@ def train(epoch, model, train_load, optimizer, loss_fn, device):
         output, state, input_energy = model(data) 
         loss = loss_fn(output, target)
         loss.backward() 
-        if batch_idx % 20 == 0:
-            for name, param in model.named_parameters():
-                if param.requires_grad and param.grad is not None:
-                    logging.info(f"[{name}] Weights sample: {param.data.view(-1)[:5].detach().cpu().numpy()}...")
-                    logging.info(f"[{name}] Gradients sample: {param.grad.view(-1)[:5].detach().cpu().numpy()}...")
         optimizer.step()
-        param, idx_closest = model.update_weights()
+        # if batch_idx % 20 == 0:
+        #     for name, param in model.named_parameters():
+        #         if param.requires_grad and param.grad is not None:
+        #             logging.info(f"[{name}] Weights sample: {param.data.view(-1)[:5].detach().cpu().numpy()}...")
+        #             logging.info(f"[{name}] Gradients sample: {param.grad.view(-1)[:5].detach().cpu().numpy()}...")
+        results = model.update_weights()
         total_loss += loss.item() 
         if batch_idx % 20 == 0: 
             logging.info(f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_load.dataset)} ({100. * batch_idx / len(train_load):.0f}%)]\tLoss: {loss.item():.6f}")
-            logging.info(f"Readout weights: {param.view(-1)[:5].detach().numpy()}...")
-            logging.info(f"Readout closest indices: {idx_closest[:5].detach().numpy()}...")
-            logging.info(f"Readout input energy: {input_energy[:5, :1].detach().numpy()}...")
-            logging.info(f"Reservoir state: {state[:5].detach().numpy()}...")
+            # logging.info(f"Readout weights: {results[0][0].view(-1)[:5].detach().numpy()}...")
+            # logging.info(f"Readout closest indices: {results[0][1][:5].detach().numpy()}...")
+            # logging.info(f"Readout input energy: {input_energy[:5, :1].detach().numpy()}...")
+            # logging.info(f"Reservoir state: {state[:5].detach().numpy()}...")
     avg_loss = total_loss / len(train_load) 
     logging.info(f"Average Loss per Epoch {epoch}: {avg_loss:.6f}") 
     weights = model.readout[0].weight.detach().cpu().view(-1)

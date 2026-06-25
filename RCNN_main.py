@@ -13,14 +13,23 @@ from RCNN_plot import plot_training_results
 
 def main(mode = "train"):
     config = {
-        "epochs": 10,
-        "batch_size": 32,
-        "reservoir_size": 300,
-        "learning_rate": 0.001,
-        "model_path": "model.pth",
-        "num_images": 5,
-        "hidden_sizes": None #[128, 64],
-    }
+            "epochs": 20,
+            "batch_size": 32,
+            "reservoir_size": 300,
+            "input_size": 28,
+            "num_layers": 1,
+            "learning_rate": 0.001,
+            "model_path": "model.pth",
+            "num_images": 5,
+            "hidden_sizes": None,#[64],
+            "scaling_factor": 0.01,
+            "leaking_rate": 0.2,
+            "spectral_radius": 0.9,
+            "input_scaling": torch.ones(29),  
+            "input_connectivity": 0.1,
+            "rc_connectivity": 0.3,
+            "bias": 1
+        }
 
     setup_logger()
 
@@ -33,14 +42,13 @@ def main(mode = "train"):
 
     if mode == "train":
         logging.info("Starting training...")
-        model = RCNN(reservoir_size=config["reservoir_size"], hidden_sizes=config["hidden_sizes"]).to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"])
+        model = RCNN(config=config).to(device)
+        optimizer = torch.optim.Adam(model.readout.parameters(), lr=config["learning_rate"])
 
         losses = []
         weights = []
         for epoch in range(1, config["epochs"] + 1):
-            model, avg_loss, weight = train(epoch, model, train_load, optimizer, loss_fn, device)
-            logging.info(f"First five weights of epoch {epoch}: {weight[:5].numpy()}...")  
+            model, avg_loss, weight = train(epoch, model, train_load, optimizer, loss_fn, device)  
             losses.append(avg_loss)
             weights.append(weight)
 
