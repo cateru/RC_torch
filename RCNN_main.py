@@ -13,7 +13,7 @@ from RCNN_plot import plot_training_results
 
 def main(mode = "train"):
     config = {
-            "epochs": 20,
+            "epochs": 30,
             "batch_size": 32,
             "reservoir_size": 300,
             "input_size": 28,
@@ -21,10 +21,10 @@ def main(mode = "train"):
             "learning_rate": 0.001,
             "model_path": "model.pth",
             "num_images": 5,
-            "hidden_sizes": None,#[64],
+            "hidden_sizes": [64],
             "scaling_factor": 0.01,
             "leaking_rate": 0.2,
-            "spectral_radius": 0.9,
+            "spectral_radius": 1.3,
             "input_scaling": torch.ones(29),  
             "input_connectivity": 0.1,
             "rc_connectivity": 0.3,
@@ -43,12 +43,11 @@ def main(mode = "train"):
     if mode == "train":
         logging.info("Starting training...")
         model = RCNN(config=config).to(device)
-        optimizer = torch.optim.Adam(model.readout.parameters(), lr=config["learning_rate"])
 
         losses = []
         weights = []
         for epoch in range(1, config["epochs"] + 1):
-            model, avg_loss, weight = train(epoch, model, train_load, optimizer, loss_fn, device)  
+            model, avg_loss, weight = train(epoch, model, train_load, loss_fn, device)  
             losses.append(avg_loss)
             weights.append(weight)
 
