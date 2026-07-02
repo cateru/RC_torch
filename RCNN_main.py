@@ -8,21 +8,21 @@ from RCNN_eval import test
 from RCNN_predict import plot_predictions
 from RCNN_load import load_model
 from RCNN_log import setup_logger
-from RCNN_plot import plot_training_results
+from RCNN_plot import plot_training_results, plot_readout_weights
 
 
 def main(mode = "train"):
     config = {
-            "epochs": 20,
+            "epochs": 30,
             "batch_size": 32,
-            "reservoir_size": 300,
+            "reservoir_size": 1000,
             "input_size": 28,
             "num_layers": 1,
             "learning_rate": 0.001,
             "model_path": "model.pth",
             "num_images": 5,
-            "hidden_sizes": None,#[64],
-            "scaling_factor": 0.1,
+            "hidden_sizes": None, #[64],
+            "scaling_factor": 0.05,
             "leaking_rate": 0.2,
             "spectral_radius": 1.3,
             "input_scaling": torch.ones(29),  
@@ -52,6 +52,7 @@ def main(mode = "train"):
             weights.append(weight)
 
         plot_training_results(losses, weights)
+        # plot_readout_weights(model)
 
         logging.info("Saving model...")
         torch.save(model.state_dict(), config["model_path"])
@@ -69,4 +70,4 @@ def main(mode = "train"):
         plot_predictions(model, test_load, device, config["num_images"])
 
 if __name__ == "__main__":
-    main(mode = "train")        
+    main(mode = "test")        

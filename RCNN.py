@@ -14,7 +14,7 @@ class RCNN(nn.Module):
         in_features = config["reservoir_size"]
         for h in config["hidden_sizes"]:
             layers.append(nn.Linear(in_features, h))
-            layers.append(nn.Sigmoid())
+            layers.append(nn.LeakyReLU())
             in_features = h
         layers.append(nn.Linear(in_features, 10))
         self.readout = nn.Sequential(*layers)  
@@ -66,7 +66,7 @@ class RCNN(nn.Module):
     def initialize_from_lookup_manhattan(self):
         with torch.no_grad():
             lookup = self.percent_decrease
-            max_init = len(lookup) // 10
+            max_init = len(lookup) // 100
             for module in self.readout:
                 if isinstance(module, nn.Linear): 
                     for param, idx_pos, idx_neg in [(module.weight, module.weight_pos_idx, module.weight_neg_idx), (module.bias, module.bias_pos_idx, module.bias_neg_idx)]:                 
@@ -94,10 +94,11 @@ class RCNN(nn.Module):
                     grad = param.grad.view(-1)
                     idx_pos = idx_pos.view(-1)
                     idx_neg = idx_neg.view(-1)
-                    step = torch.ones_like(grad)
-                    # step = step / (step.mean() + 1e-8)
-                    # step = (step * max_step).long()
-                    # step = torch.clamp(step, 1, max_step)
+                    # step = torch.ones_like(grad)
+                    step = grad.abs()
+                    step = step / (step.mean() + 1e-8)
+                    step = (step * max_step).long()
+                    step = torch.clamp(step, 1, max_step)
                     # grad_sign = grad.sign()
                     step = step.long()
                     # pos_mask = grad_sign < 0
@@ -108,8 +109,8 @@ class RCNN(nn.Module):
                     idx_neg[grad < 0] -= step[grad < 0]
                     idx_pos[grad > 0] -= step[grad > 0]
                     idx_neg[grad > 0] += step[grad > 0]
-                    idx_pos.clamp_(0, max_idx)
-                    idx_neg.clamp_(0, max_idx)
+                    idx_pos = torch.clamp(idx_pos, 0, max_idx)
+                    idx_neg = torch.clamp(idx_neg, 0, max_idx)
                     param.copy_(lookup[idx_pos].view_as(param) - lookup[idx_neg].view_as(param))
                     results.append((param.clone(), idx_pos.clone(), idx_neg.clone(),))
         return results
