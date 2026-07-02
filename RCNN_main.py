@@ -13,7 +13,7 @@ from RCNN_plot import plot_training_results
 
 def main(mode = "train"):
     config = {
-            "epochs": 30,
+            "epochs": 20,
             "batch_size": 32,
             "reservoir_size": 300,
             "input_size": 28,
@@ -21,8 +21,8 @@ def main(mode = "train"):
             "learning_rate": 0.001,
             "model_path": "model.pth",
             "num_images": 5,
-            "hidden_sizes": [64],
-            "scaling_factor": 0.01,
+            "hidden_sizes": None,#[64],
+            "scaling_factor": 0.1,
             "leaking_rate": 0.2,
             "spectral_radius": 1.3,
             "input_scaling": torch.ones(29),  
@@ -69,4 +69,4 @@ def main(mode = "train"):
         plot_predictions(model, test_load, device, config["num_images"])
 
 if __name__ == "__main__":
-    main(mode = "test")        
+    main(mode = "train")        
