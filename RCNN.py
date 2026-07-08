@@ -15,7 +15,7 @@ class RCNN(nn.Module):
         in_features = config["reservoir_size"]
         for h in config["hidden_sizes"]:
             layers.append(nn.Linear(in_features, h))
-            layers.append(nn.Sigmoid())
+            layers.append(nn.ReLU())
             in_features = h
         layers.append(nn.Linear(in_features, 10))
         self.readout = nn.Sequential(*layers)  
@@ -42,38 +42,36 @@ class RCNN(nn.Module):
 
     def convert_tangent(self, states):
         percent = (states + 1) / 2 
-        input_energy = percent * 1000 
+        input_energy = percent * 1000
         return input_energy
 
     def forward(self, data):
         data = data.squeeze(1)
         reservoir_out, _ = self.reservoir(data)
-        state = reservoir_out[:, -1, :]  
+        state = reservoir_out[:, -10: , :].mean(dim=1)
         input_energy = self.convert_tangent(state)
         response = self.exp_outputs(input_energy)
         return self.readout(response), state, input_energy
-    
-    def update_weights(self):
+
+    def step_manhattan_differential(self):
         results = []
-        with torch.no_grad(): 
-            lookup = self.percent_decrease  
+        with torch.no_grad():
+            lookup = self.percent_decrease
+            lookup = lookup - torch.min(lookup)
             for module in self.readout:
                 if isinstance(module, nn.Linear):
                     for param in [module.weight, module.bias]:
                         if param is None:
                             continue
                         param_flat = param.view(-1) 
-                        idx = torch.searchsorted(lookup, param_flat) 
+                        value = torch.abs(param_flat)
+                        sign = torch.sign(param_flat)
+                        idx = torch.searchsorted(lookup, value) 
                         idx = torch.clamp(idx, 1, len(lookup) - 1) 
                         left = lookup[idx - 1] 
                         right = lookup[idx]
-                        idx_closest = torch.where(
-                            torch.abs(param_flat - left) < torch.abs(param_flat - right),
-                            idx - 1,
-                            idx
-                        ) 
+                        idx_closest = torch.where(torch.abs(param_flat - left) < torch.abs(param_flat - right), idx - 1, idx) 
                         new_param = lookup[idx_closest]
-                        param_flat.copy_(new_param)  
-                        results.append((new_param.clone(), idx_closest.clone()))
+                        param.copy_((sign * new_param).view_as(param))
+                        results.append((param.clone(), idx_closest.clone()))
         return results
-
