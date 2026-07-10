@@ -16,7 +16,7 @@ def train(epoch, model, train_load, optimizer, loss_fn, device):
         #         if param.requires_grad and param.grad is not None:
         #             logging.info(f"[{name}] Weights sample: {param.data.view(-1)[:5].detach().cpu().numpy()}...")
         #             logging.info(f"[{name}] Gradients sample: {param.grad.view(-1)[:5].detach().cpu().numpy()}...")
-        results = model.update_weights()
+        results = model.step_differential()
         total_loss += loss.item() 
         if batch_idx % 20 == 0: 
             logging.info(f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_load.dataset)} ({100. * batch_idx / len(train_load):.0f}%)]\tLoss: {loss.item():.6f}")

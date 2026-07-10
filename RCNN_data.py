@@ -14,4 +14,4 @@ def load_mnist(batch_size, train=True):
         download=True,
         transform=transform
     ) 
-    return DataLoader(dataset, batch_size=batch_size, shuffle=train, num_workers=1, pin_memory=True)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=train, num_workers=1)

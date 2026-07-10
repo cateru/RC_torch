@@ -57,7 +57,7 @@ class RCNN(nn.Module):
         results = []
         with torch.no_grad():
             lookup = self.percent_decrease
-            lookup = lookup - torch.min(lookup)
+            lookup = lookup - lookup[0]
             for module in self.readout:
                 if isinstance(module, nn.Linear):
                     for param in [module.weight, module.bias]:
@@ -70,7 +70,7 @@ class RCNN(nn.Module):
                         idx = torch.clamp(idx, 1, len(lookup) - 1) 
                         left = lookup[idx - 1] 
                         right = lookup[idx]
-                        idx_closest = torch.where(torch.abs(param_flat - left) < torch.abs(param_flat - right), idx - 1, idx) 
+                        idx_closest = torch.where(torch.abs(value - left) < torch.abs(value - right), idx - 1, idx) 
                         new_param = lookup[idx_closest]
                         param.copy_((sign * new_param).view_as(param))
                         results.append((param.clone(), idx_closest.clone()))
