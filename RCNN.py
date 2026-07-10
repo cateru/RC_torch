@@ -53,7 +53,7 @@ class RCNN(nn.Module):
         response = self.exp_outputs(input_energy)
         return self.readout(response), state, input_energy
 
-    def step_manhattan_differential(self):
+    def step_differential(self):
         results = []
         with torch.no_grad():
             lookup = self.percent_decrease
