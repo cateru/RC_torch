@@ -1,13 +1,19 @@
 import logging
+from xml.parsers.expat import model
 
 
 def train(epoch, model, train_load, loss_fn, device):
     model.train()
     total_loss = 0  
+    correct = 0
+    total = 0
     for batch_idx, (data, target) in enumerate(train_load):
         data, target = data.to(device), target.to(device) 
         model.zero_grad()
         output, state, input_energy = model(data) 
+        predicted = output.argmax(dim=1)
+        correct += (predicted == target).sum().item()
+        total += target.size(0)
         loss = loss_fn(output, target)
         loss.backward() 
         # if batch_idx % 20 == 0:
@@ -25,5 +31,7 @@ def train(epoch, model, train_load, loss_fn, device):
             # logging.info(f"Reservoir state: {state[:5].detach().numpy()}...")
     avg_loss = total_loss / len(train_load) 
     logging.info(f"Average Loss per Epoch {epoch}: {avg_loss:.6f}") 
-    weights = model.readout[0].weight.detach().cpu().view(-1)
-    return model, avg_loss, weights
+    accuracy = 100 * correct / total
+    logging.info(f"Average Accuracy: {accuracy:.2f}%")
+    weights = model.readout[0].weight.detach().cpu()
+    return model, avg_loss, accuracy, weights
